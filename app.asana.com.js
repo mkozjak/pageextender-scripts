@@ -1,4 +1,6 @@
 if (window.top === window) {
-    if (document.getElementById("asana_sidebar"))
-        document.getElementsByClassName("SidebarHeader-sidebarCloseButton")[0].click()
+    const doc = document.querySelectorAll('[aria-label="Hide sidebar"], [aria-label="Expand sidebar"]')
+
+    if (doc.length === 1)
+        doc[0].click()
 }
