@@ -2,7 +2,7 @@ if (window.top === window) {
 	let airPlayLink = null
 
 	document.addEventListener('keydown', function(event) {
-	    if (event.key === 'a') {
+	    if (event.key === 'a' && event.ctrlKey) {
 	        // Use the saved link here
 	        console.log("OPEN", airPlayLink)
 	        window.open(airPlayLink, '_self')
@@ -16,6 +16,11 @@ if (window.top === window) {
 	}
 
 	if (window.location.pathname.includes('/embed77/')) {
+		window.open = function() {
+			console.log('Opening new tabs or windows is disabled.')
+			return null
+		}
+
 		const video = document.querySelector('video');
 
 		if (window.WebKitPlaybackTargetAvailabilityEvent) {
