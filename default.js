@@ -1,4 +1,4 @@
-function hintingMode() {
+function enableHinting() {
   // Array to store hints and corresponding elements
   const hintElements = [];
 
@@ -16,8 +16,11 @@ function hintingMode() {
     }
   }
 
-  // Function to create hints for all clickable elements
-  function createHints() {
+  // Function to create hints for visible clickable elements in the scroll area
+  function createHintsInScrollArea() {
+    const scrollableElement = document.scrollingElement || document.documentElement;
+    const viewportHeight = window.innerHeight;
+
     const clickableElements = document.querySelectorAll(
       'a, button, input[type="submit"], input[type="button"], *[onclick]'
     );
@@ -25,34 +28,37 @@ function hintingMode() {
     let hintIndex = 0;
 
     clickableElements.forEach((element) => {
-      const hint = document.createElement('div');
-      hint.className = 'hint';
-      const hintText = hintCombinations[hintIndex];
-      hint.innerText = hintText;
-      hint.style.position = 'absolute';
-      hint.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
-      hint.style.color = 'white';
-      hint.style.padding = '2px 4px';
-      hint.style.borderRadius = '3px';
-      hint.style.cursor = 'pointer';
-      hint.style.zIndex = '9999'; // Ensure hints are displayed above other content
-
-      hint.addEventListener('click', () => {
-        element.click();
-      });
-
-      // Position the hint near the clickable element
       const rect = element.getBoundingClientRect();
-      hint.style.top = rect.top + 'px';
-      hint.style.left = rect.left + 'px';
+      if (rect.top >= 0 && rect.bottom <= viewportHeight) {
+        // The element is within the current viewport
+        const hint = document.createElement('div');
+        hint.className = 'hint';
+        const hintText = hintCombinations[hintIndex];
+        hint.innerText = hintText;
+        hint.style.position = 'absolute';
+        hint.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+        hint.style.color = 'white';
+        hint.style.padding = '2px 4px';
+        hint.style.borderRadius = '3px';
+        hint.style.cursor = 'pointer';
+        hint.style.zIndex = '9999'; // Ensure hints are displayed above other content
 
-      document.body.appendChild(hint);
+        hint.addEventListener('click', () => {
+          element.click();
+        });
 
-      // Store the hint and corresponding element in the array
-      hintElements.push({ hint: hintText, element });
+        // Position the hint near the clickable element
+        hint.style.top = rect.top + 'px';
+        hint.style.left = rect.left + 'px';
 
-      // Increment hint index
-      hintIndex = (hintIndex + 1) % hintCombinations.length;
+        document.body.appendChild(hint);
+
+        // Store the hint and corresponding element in the array
+        hintElements.push({ hint: hintText, element });
+
+        // Increment hint index
+        hintIndex = (hintIndex + 1) % hintCombinations.length;
+      }
     });
   }
 
@@ -74,7 +80,7 @@ function hintingMode() {
     if (hinting) {
       removeHints();
     } else {
-      createHints();
+      createHintsInScrollArea();
     }
     hinting = !hinting;
   }
@@ -135,6 +141,14 @@ function hintingMode() {
       }
     }
   });
+
+  // Listen for scroll events to remove hints when scrolling starts
+  window.addEventListener('scroll', () => {
+    if (hinting) {
+      removeHints();
+      hinting = false;
+    }
+  });
 }
 
-hintingMode()
+enableHinting()
