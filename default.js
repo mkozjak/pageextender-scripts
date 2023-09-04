@@ -1,3 +1,5 @@
+// WIP
+
 function enableHinting() {
   // Array to store hints and corresponding elements
   const hintElements = [];
@@ -77,20 +79,18 @@ function enableHinting() {
   let hinting = false;
 
   function toggleHintingMode() {
-    if (hinting) {
-      removeHints();
-    } else {
-      createHintsInScrollArea();
+    if (!isTextInputInFocus() && !isKeyComboPressed()) {
+      if (!hinting) {
+        createHintsInScrollArea();
+        hinting = true;
+      }
     }
-    hinting = !hinting;
   }
 
   // Function to exit hinting mode
   function exitHintingMode() {
-    if (hinting) {
-      removeHints();
-      hinting = false;
-    }
+    removeHints();
+    hinting = false;
   }
 
   // Variables to track input and timer
@@ -110,11 +110,31 @@ function enableHinting() {
     inputBuffer = '';
   }
 
-  // Listen for 'Ctrl+H' key press to toggle hinting mode
+  // Function to check if any HTML text input is in focus
+  function isTextInputInFocus() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="password"], textarea');
+    for (const input of inputs) {
+      if (document.activeElement === input) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Function to check if any key combination is pressed
+  function isKeyComboPressed() {
+    return (
+      hintCharacters.includes('f') &&
+      (e.ctrlKey || e.metaKey) &&
+      !isTextInputInFocus()
+    );
+  }
+
+  // Listen for 'F' key press to toggle hinting mode
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'h' && e.ctrlKey) {
+    if (e.key === 'f' && !isTextInputInFocus()) {
+      e.preventDefault(); // Prevent the browser's default behavior for 'F'
       toggleHintingMode();
-      e.preventDefault(); // Prevent the browser's default behavior for 'Ctrl+H'
     }
   });
 
@@ -135,9 +155,9 @@ function enableHinting() {
         // Add the key to the input buffer
         inputBuffer += key;
 
-        // Clear the previous timer and set a new one for 1 second
+        // Clear the previous timer and set a new one for 2 seconds
         clearTimeout(inputTimer);
-        inputTimer = setTimeout(processInput, 1000);
+        inputTimer = setTimeout(processInput, 2000);
       }
     }
   });
@@ -145,8 +165,7 @@ function enableHinting() {
   // Listen for scroll events to remove hints when scrolling starts
   window.addEventListener('scroll', () => {
     if (hinting) {
-      removeHints();
-      hinting = false;
+      exitHintingMode();
     }
   });
 }
